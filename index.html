@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <title>Digit Permuter • Mini App</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    :root {
+      --bg: #ffffff;
+      --fg: #111111;
+      --muted: #666666;
+      --btn: #0a84ff;
+      --btn-fg: #ffffff;
+      --border: #e5e7eb;
+    }
+    body.dark {
+      --bg: #1c1c1e;
+      --fg: #f2f2f7;
+      --muted: #a1a1aa;
+      --btn: #2f7cff;
+      --btn-fg: #ffffff;
+      --border: #2a2a2d;
+    }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--fg);
+      padding: 18px;
+    }
+    .card {
+      max-width: 520px;
+      margin: 0 auto;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 2px 10px rgba(0,0,0,.06);
+      background: var(--bg);
+    }
+    h1 {
+      font-size: 18px;
+      margin: 0 0 12px 0;
+    }
+    p {
+      margin: 0 0 16px 0;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+    .row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    input[type="number"] {
+      appearance: textfield;
+      -moz-appearance: textfield;
+      -webkit-appearance: none;
+      width: 100%;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--fg);
+      border-radius: 12px;
+      padding: 12px;
+      font-size: 20px;
+      text-align: center;
+      outline: none;
+    }
+    .actions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 8px;
+    }
+    button {
+      border: none;
+      border-radius: 12px;
+      padding: 12px 16px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    #sendBtn {
+      background: var(--btn);
+      color: var(--btn-fg);
+      flex: 1;
+    }
+    #clearBtn {
+      background: transparent;
+      color: var(--muted);
+      border: 1px solid var(--border);
+    }
+    .hint {
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>تولید همهٔ ترکیب‌های یکتا از ۴ رقم</h1>
+    <p>چهار رقم را وارد کنید (هر فیلد یک رقم ۰ تا ۹). با زدن دکمهٔ «ارسال» داده به ربات برگشت داده می‌شود و ربات لیست ترکیب‌ها را در چت می‌فرستد.</p>
+
+    <div class="row">
+      <input id="d1" type="number" inputmode="numeric" min="0" max="9" placeholder="۰">
+      <input id="d2" type="number" inputmode="numeric" min="0" max="9" placeholder="۰">
+      <input id="d3" type="number" inputmode="numeric" min="0" max="9" placeholder="۰">
+      <input id="d4" type="number" inputmode="numeric" min="0" max="9" placeholder="۰">
+    </div>
+
+    <div class="actions">
+      <button id="clearBtn" type="button">پاک‌سازی</button>
+      <button id="sendBtn" type="button">ارسال به ربات</button>
+    </div>
+
+    <div class="hint">نکته: اگر رقم تکراری بدهید، تعداد حالات کمتر از ۲۴ خواهد شد (مثلاً ۰ ۹ ۹ ۱ → ۱۲ حالت).</div>
+  </div>
+
+  <script>
+    const tg = window.Telegram?.WebApp;
+    // تنظیم رنگ‌ها با تم تلگرام
+    function applyTheme() {
+      const colorScheme = tg?.colorScheme || 'light';
+      if (colorScheme === 'dark') document.body.classList.add('dark');
+      else document.body.classList.remove('dark');
+      tg?.expand();
+    }
+    applyTheme();
+    tg?.onEvent('themeChanged', applyTheme);
+
+    const d1 = document.getElementById('d1');
+    const d2 = document.getElementById('d2');
+    const d3 = document.getElementById('d3');
+    const d4 = document.getElementById('d4');
+    const sendBtn = document.getElementById('sendBtn');
+    const clearBtn = document.getElementById('clearBtn');
+
+    function onlyOneDigit(v) { return /^\d$/.test(v); }
+
+    function getDigits() {
+      const vals = [d1.value, d2.value, d3.value, d4.value];
+      const ok = vals.every(onlyOneDigit);
+      return ok ? vals.map(Number) : null;
+    }
+
+    sendBtn.onclick = function() {
+      const digits = getDigits();
+      if (!digits) {
+        alert("هر فیلد باید دقیقاً یک رقم ۰ تا ۹ باشد.");
+        return;
+      }
+      const payload = JSON.stringify({ source: "miniapp", digits });
+      tg?.sendData(payload);
+      // می‌توانیم صفحه را ببندیم یا رنگ دکمه را تغییر دهیم
+      tg?.close(); // اگر نخواهید بسته شود، این خط را کامنت کنید.
+    };
+
+    clearBtn.onclick = function() {
+      d1.value = d2.value = d3.value = d4.value = '';
+      d1.focus();
+    };
+
+    // فوکوس خودکار بین فیلدها
+    [d1,d2,d3].forEach((el, i, arr) => {
+      el.addEventListener('input', () => {
+        if (el.value.length === 1) arr[i+1].focus();
+      });
+    });
+  </script>
+</body>
+</html>
