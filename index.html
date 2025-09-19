@@ -60,11 +60,11 @@
     <div class="hint" id="status">Status: آماده</div>
 
     <div class="results" id="results" hidden>
-      <span class="badge" id="countBadge">۰ مورد</span>
       <div class="grid" id="grid"></div>
 
       <!-- دکمه پاک‌سازی پایین نتایج -->
       <div class="footer-actions">
+      <span class="badge" id="countBadge">۰ مورد</span>
         <button id="clearBtn" type="button" class="btn-ghost">پاک‌سازی</button>
       </div>
     </div>
@@ -135,6 +135,7 @@
     // نمایش در ۳ ستون x ۸ ردیف
     function renderGrid(digits){
       const combos=permutations4(digits);
+      countBadge.textContent = combos.length + ' مورد';
       gridEl.innerHTML='';
       const MAX=24; 
       const toShow = combos.slice(0, MAX);
