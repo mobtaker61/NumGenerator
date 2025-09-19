@@ -118,56 +118,40 @@
     <div class="hint">نکته: اگر رقم تکراری بدهید، تعداد حالات کمتر از ۲۴ خواهد شد (مثلاً ۰ ۹ ۹ ۱ → ۱۲ حالت).</div>
   </div>
 
-  <script>
-    const tg = window.Telegram?.WebApp;
-    // تنظیم رنگ‌ها با تم تلگرام
-    function applyTheme() {
-      const colorScheme = tg?.colorScheme || 'light';
-      if (colorScheme === 'dark') document.body.classList.add('dark');
-      else document.body.classList.remove('dark');
-      tg?.expand();
+<script>
+  const tg = window.Telegram?.WebApp;
+  const status = document.createElement('div');
+  status.className = 'hint';
+  document.body.appendChild(status);
+
+  function setStatus(msg) { status.textContent = "Status: " + msg; }
+
+  function applyTheme() {
+    const colorScheme = tg?.colorScheme || 'light';
+    if (colorScheme === 'dark') document.body.classList.add('dark');
+    else document.body.classList.remove('dark');
+    tg?.expand();
+  }
+  applyTheme();
+  tg?.onEvent?.('themeChanged', applyTheme);
+
+  // ...
+  document.getElementById('sendBtn').onclick = function() {
+    const digits = getDigits();
+    if (!digits) { alert("هر فیلد باید یک رقم ۰ تا ۹ باشد."); return; }
+
+    const payload = JSON.stringify({ source: "miniapp", digits });
+
+    if (!tg || !tg.sendData) {
+      setStatus("Telegram.WebApp در دسترس نیست. Mini-App را حتماً از داخل چت ربات باز کنید.");
+      return;
     }
-    applyTheme();
-    tg?.onEvent('themeChanged', applyTheme);
 
-    const d1 = document.getElementById('d1');
-    const d2 = document.getElementById('d2');
-    const d3 = document.getElementById('d3');
-    const d4 = document.getElementById('d4');
-    const sendBtn = document.getElementById('sendBtn');
-    const clearBtn = document.getElementById('clearBtn');
-
-    function onlyOneDigit(v) { return /^\d$/.test(v); }
-
-    function getDigits() {
-      const vals = [d1.value, d2.value, d3.value, d4.value];
-      const ok = vals.every(onlyOneDigit);
-      return ok ? vals.map(Number) : null;
-    }
-
-    sendBtn.onclick = function() {
-      const digits = getDigits();
-      if (!digits) {
-        alert("هر فیلد باید دقیقاً یک رقم ۰ تا ۹ باشد.");
-        return;
-      }
-      const payload = JSON.stringify({ source: "miniapp", digits });
-      tg?.sendData(payload);
-      // می‌توانیم صفحه را ببندیم یا رنگ دکمه را تغییر دهیم
-      //tg?.close(); // اگر نخواهید بسته شود، این خط را کامنت کنید.
-    };
-
-    clearBtn.onclick = function() {
-      d1.value = d2.value = d3.value = d4.value = '';
-      d1.focus();
-    };
-
-    // فوکوس خودکار بین فیلدها
-    [d1,d2,d3].forEach((el, i, arr) => {
-      el.addEventListener('input', () => {
-        if (el.value.length === 1) arr[i+1].focus();
-      });
-    });
-  </script>
+    tg.sendData(payload);
+    setStatus("ارسال شد. منتظر پیام ربات در چت باشید.");
+    // اگر می‌خواهی بسته شود، خط زیر را باز کن:
+    // tg.close();
+  };
+</script>
 </body>
 </html>
