@@ -118,40 +118,25 @@
     <div class="hint">نکته: اگر رقم تکراری بدهید، تعداد حالات کمتر از ۲۴ خواهد شد (مثلاً ۰ ۹ ۹ ۱ → ۱۲ حالت).</div>
   </div>
 
-<script>
+  <script>
   const tg = window.Telegram?.WebApp;
-  const status = document.createElement('div');
-  status.className = 'hint';
-  document.body.appendChild(status);
-
-  function setStatus(msg) { status.textContent = "Status: " + msg; }
-
-  function applyTheme() {
-    const colorScheme = tg?.colorScheme || 'light';
-    if (colorScheme === 'dark') document.body.classList.add('dark');
-    else document.body.classList.remove('dark');
-    tg?.expand();
+  function onlyOneDigit(v){ return /^\d$/.test(v); }
+  function getDigits(){
+    const vals=[d1.value,d2.value,d3.value,d4.value];
+    return vals.every(onlyOneDigit) ? vals.map(Number) : null;
   }
-  applyTheme();
-  tg?.onEvent?.('themeChanged', applyTheme);
+  const status=document.createElement('div'); status.className='hint'; document.body.appendChild(status);
+  function setStatus(m){ status.textContent="Status: "+m; }
 
-  // ...
-  document.getElementById('sendBtn').onclick = function() {
+  document.getElementById('sendBtn').onclick = function () {
     const digits = getDigits();
     if (!digits) { alert("هر فیلد باید یک رقم ۰ تا ۹ باشد."); return; }
-
-    const payload = JSON.stringify({ source: "miniapp", digits });
-
-    if (!tg || !tg.sendData) {
-      setStatus("Telegram.WebApp در دسترس نیست. Mini-App را حتماً از داخل چت ربات باز کنید.");
-      return;
-    }
-
-    tg.sendData(payload);
+    if (!tg || !tg.sendData) { setStatus("WebApp در دسترس نیست. فرم را از داخل چت ربات باز کنید."); return; }
+    tg.sendData(JSON.stringify({ source:"miniapp", digits }));
     setStatus("ارسال شد. منتظر پیام ربات در چت باشید.");
-    // اگر می‌خواهی بسته شود، خط زیر را باز کن:
-    // tg.close();
+    // tg.close();  // بسته نشود
   };
 </script>
+
 </body>
 </html>
