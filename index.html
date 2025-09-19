@@ -135,7 +135,6 @@
     // نمایش در ۳ ستون x ۸ ردیف
     function renderGrid(digits){
       const combos=permutations4(digits);
-      countBadge.textContent = combos.length + ' مورد';
       gridEl.innerHTML='';
       const MAX=24; 
       const toShow = combos.slice(0, MAX);
